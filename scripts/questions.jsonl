@@ -1,0 +1,31 @@
+{"id":"q01","question":"邓布利多广为人知的贡献包括哪三项？","gold_chunk_ids":["p127_c0"],"k":16,"mode":"rag"}
+{"id":"q02","question":"邓布利多与哪位合作伙伴在炼金术方面卓有成效？","gold_chunk_ids":["p127_c0"],"k":8,"mode":"retrieve_only"}
+{"id":"q03","question":"赫敏说她额外多买了哪些参考书？","gold_chunk_ids":["p130_c0"],"k":16,"mode":"rag"}
+{"id":"q04","question":"谁被说对黑魔法很在行？","gold_chunk_ids":["p148_c1"],"k":8,"mode":"retrieve_only"}
+{"id":"q05","question":"斯内普教什么课，大家说他眼馋哪门课？","gold_chunk_ids":["p148_c1"],"k":16,"mode":"rag"}
+{"id":"q06","question":"哈利问斯拉格霍恩知不知道什么？","gold_chunk_ids":["p2812_c0"],"k":8,"mode":"retrieve_only"}
+{"id":"q07","question":"卢平回答“刚才那是什么东西？”说的是哪种生物？","gold_chunk_ids":["p688_c1"],"k":8,"mode":"retrieve_only"}
+{"id":"q08","question":"食死徒是什么？","gold_chunk_ids":["p1109_c1"],"k":8,"mode":"retrieve_only"}
+{"id":"q09","question":"昨夜伏地魔绕到哪里去找波特夫妇？","gold_chunk_ids":["p45_c1"],"k":8,"mode":"retrieve_only"}
+{"id":"q10","question":"《魔法防御理论》的作者是谁？","gold_chunk_ids":["p4136_c1"],"k":8,"mode":"retrieve_only"}
+{"id":"q11","question":"《高级魔药制作》的作者是谁？","gold_chunk_ids":["p4136_c1"],"k":8,"mode":"retrieve_only"}
+{"id":"q12","question":"《怪兽及其产地》的作者是谁？","gold_chunk_ids":["p4136_c1"],"k":8,"mode":"retrieve_only"}
+{"id":"q13","question":"蜘蛛尾巷开头描写的河流两岸有什么特征？","gold_chunk_ids":["p2496_c0"],"k":16,"mode":"rag"}
+{"id":"q14","question":"是谁派了凤凰社的人随时跟踪哈利？","gold_chunk_ids":["p1685_c0"],"k":16,"mode":"rag"}
+{"id":"q15","question":"蜘蛛尾巷在麻瓜世界的什么地方？","gold_chunk_ids":["p4524_c0"],"k":8,"mode":"retrieve_only"}
+{"id":"q16","question":"蜘蛛尾巷的英文名是什么？","gold_chunk_ids":["p4524_c0"],"k":8,"mode":"retrieve_only"}
+{"id":"q17","question":"pudding 除了“布丁”还有什么意思？","gold_chunk_ids":["p4524_c0"],"k":8,"mode":"retrieve_only"}
+{"id":"q18","question":"哈利最喜欢的餐后点心是什么？","gold_chunk_ids":["p4524_c0"],"k":8,"mode":"retrieve_only"}
+{"id":"q19","question":"Steak and Kidney Pie 是怎样的传统料理？","gold_chunk_ids":["p4524_c0"],"k":8,"mode":"retrieve_only"}
+{"id":"q20","question":"《解梦指南》的作者是谁？","gold_chunk_ids":["p4136_c1"],"k":8,"mode":"retrieve_only"}
+{"id":"q21","question":"《高级魔药制作》价值多少加隆？","gold_chunk_ids":["p4136_c1"],"k":8,"mode":"retrieve_only"}
+{"id":"q22","question":"《怪兽及其产地》是什么类型的书？","gold_chunk_ids":["p4136_c1"],"k":8,"mode":"retrieve_only"}
+{"id":"q23","question":"食死徒没有被关进哪里？","gold_chunk_ids":["p1109_c1"],"k":8,"mode":"retrieve_only"}
+{"id":"q24","question":"卢平给哈利吃了什么？","gold_chunk_ids":["p688_c1"],"k":8,"mode":"retrieve_only"}
+{"id":"q25","question":"邓布利多在一九四五年击败了谁？","gold_chunk_ids":["p127_c0"],"k":8,"mode":"retrieve_only"}
+{"id":"q26","question":"邓布利多发现了什么的十二种用途？","gold_chunk_ids":["p127_c0"],"k":8,"mode":"retrieve_only"}
+{"id":"q27","question":"邓布利多爱好什么运动？","gold_chunk_ids":["p127_c0"],"k":8,"mode":"retrieve_only"}
+{"id":"q28","question":"邓布利多现任霍格沃茨什么职位？","gold_chunk_ids":["p127_c0"],"k":8,"mode":"retrieve_only"}
+{"id":"q29","question":"赫敏说那些书里都提到了谁？","gold_chunk_ids":["p130_c0"],"k":8,"mode":"retrieve_only"}
+{"id":"q30","question":"斯拉格霍恩听到魂器后问哈利什么？","gold_chunk_ids":["p2812_c0"],"k":8,"mode":"retrieve_only"}
+{"id":"q31","question":"《魔法防御理论》的英文书名是什么？","gold_chunk_ids":["p4136_c1"],"k":8,"mode":"retrieve_only"}

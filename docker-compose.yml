@@ -1,0 +1,71 @@
+services:
+  api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      args:
+        PYTHON_VERSION: ${PYTHON_VERSION:-3.11}
+    container_name: rag_api
+    env_file:
+      - .env
+    environment:
+      - PYTHONUNBUFFERED=1
+      - RETRIEVAL_HYBRID_ALPHA=${RETRIEVAL_HYBRID_ALPHA:-0.65}
+      - RETRIEVAL_RERANK_ENABLED=${RETRIEVAL_RERANK_ENABLED:-true}
+      - RETRIEVAL_RERANK_BASE_URL=${RETRIEVAL_RERANK_BASE_URL:-http://rerank:9001}
+      - RETRIEVAL_RERANK_CANDIDATES=${RETRIEVAL_RERANK_CANDIDATES:-32}
+      - RETRIEVAL_RERANK_HTTP_TIMEOUT_SECONDS=${RETRIEVAL_RERANK_HTTP_TIMEOUT_SECONDS:-60}
+      - RETRIEVAL_EXPAND_ENABLED=${RETRIEVAL_EXPAND_ENABLED:-true}
+      - RETRIEVAL_EXPAND_N=${RETRIEVAL_EXPAND_N:-2}
+      - RETRIEVAL_MIN_QUERY_TOKEN_OVERLAP=${RETRIEVAL_MIN_QUERY_TOKEN_OVERLAP:-0}
+      - RETRIEVAL_SCORE_DELTA=${RETRIEVAL_SCORE_DELTA:-0.20}
+      - RETRIEVAL_GAP_THRESHOLD=${RETRIEVAL_GAP_THRESHOLD:-0.18}
+      - RAG_MAX_CHUNKS=${RAG_MAX_CHUNKS:-10}
+      - RAG_EVIDENCE_CHUNK_MAX_CHARS=${RAG_EVIDENCE_CHUNK_MAX_CHARS:-900}
+      - RAG_EVIDENCE_TOTAL_MAX_CHARS=${RAG_EVIDENCE_TOTAL_MAX_CHARS:-10000}
+      - RAG_RETRY_ON_ABSTAIN=${RAG_RETRY_ON_ABSTAIN:-true}
+    volumes:
+      - ./data:/app/data
+      - ./storage:/app/storage
+    ports:
+      - "8000:8000"
+    depends_on:
+      rerank:
+        condition: service_healthy
+
+  web:
+    build:
+      context: ./web
+      dockerfile: Dockerfile
+    container_name: rag_web
+    env_file:
+      - .env
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_API_BASE_URL=${NEXT_PUBLIC_API_BASE_URL:-http://localhost:8000}
+    ports:
+      - "3000:3000"
+    depends_on:
+      - api
+
+  rerank:
+    build:
+      context: ./rerank_service
+      dockerfile: Dockerfile
+    container_name: rag_rerank
+    environment:
+      - MODEL_ID=${RERANK_MODEL_ID:-BAAI/bge-reranker-base}
+      - DEVICE=${RERANK_DEVICE:-cpu}
+      - PASSAGE_MAX_CHARS=${RERANK_PASSAGE_MAX_CHARS:-800}
+      - BATCH_SIZE=${RERANK_BATCH_SIZE:-16}
+      - PRELOAD_MODEL=${RERANK_PRELOAD_MODEL:-true}
+      - HF_HOME=/cache/hf
+    volumes:
+      - ./storage/hf_cache:/cache/hf
+    ports:
+      - "9001:9001"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:9001/health', timeout=2).read()"]
+      interval: 5s
+      timeout: 3s
+      retries: 30

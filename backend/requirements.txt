@@ -1,0 +1,11 @@
+fastapi==0.115.6
+uvicorn[standard]==0.30.6
+pydantic==2.10.6
+pydantic-settings==2.7.1
+python-multipart==0.0.20
+itsdangerous==2.2.0
+numpy==1.26.4
+faiss-cpu==1.8.0.post1
+pypdf==5.1.0
+pdfminer.six==20240706
+openai==1.55.3
