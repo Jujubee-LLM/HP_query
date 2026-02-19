@@ -39,6 +39,95 @@ def _clamp01(x: float) -> float:
     return float(x)
 
 
+def _safe_float(value: Any, default: float = 0.0) -> float:
+    try:
+        return float(value)
+    except Exception:
+        return float(default)
+
+
+def _infer_threshold_mode(chunks: list[dict]) -> str:
+    for c in chunks:
+        if c.get("rrf_score") is not None:
+            return "hybrid"
+        if c.get("bm25_score") is not None:
+            return "hybrid"
+    return "vector"
+
+
+def rerank_auto_decision(
+    chunks: list[dict],
+    *,
+    threshold_mode: str | None = None,
+) -> tuple[bool, dict[str, Any]]:
+    if not chunks:
+        return False, {"rerank_auto_decision": "skip", "rerank_auto_reason": "no_chunks"}
+
+    mode = (threshold_mode or _infer_threshold_mode(chunks) or "vector").strip().lower()
+    scores = sorted((_safe_float(c.get("score"), 0.0) for c in chunks), reverse=True)
+    top1 = float(scores[0]) if scores else 0.0
+    top2 = float(scores[1]) if len(scores) > 1 else None
+    gap = (top1 - float(top2)) if top2 is not None else None
+    gap_ratio = (gap / top1) if (gap is not None and top1 > 0) else None
+
+    min_top1 = getattr(settings, "retrieval_rerank_auto_min_top1_score", None)
+    gap_th = getattr(settings, "retrieval_rerank_auto_gap_threshold", None)
+    gap_ratio_th = getattr(settings, "retrieval_rerank_auto_gap_ratio_threshold", None)
+
+    if gap_th is None:
+        gap_th = getattr(settings, "retrieval_gap_threshold", None)
+    if gap_ratio_th is None:
+        gap_ratio_th = getattr(settings, "retrieval_gap_threshold", None)
+
+    decision = False
+    reason = "confident"
+
+    if min_top1 is not None:
+        try:
+            min_top1 = float(min_top1)
+        except Exception:
+            min_top1 = None
+    if gap_th is not None:
+        try:
+            gap_th = float(gap_th)
+        except Exception:
+            gap_th = None
+    if gap_ratio_th is not None:
+        try:
+            gap_ratio_th = float(gap_ratio_th)
+        except Exception:
+            gap_ratio_th = None
+
+    if min_top1 is not None and top1 < min_top1:
+        decision = True
+        reason = "top1_below_min"
+    elif top2 is None:
+        decision = False
+        reason = "single_candidate"
+    elif mode in ("hybrid", "rerank"):
+        if gap_ratio_th is not None and gap_ratio is not None and gap_ratio < gap_ratio_th:
+            decision = True
+            reason = "gap_ratio_below"
+    else:
+        if gap_th is not None and gap is not None and gap < gap_th:
+            decision = True
+            reason = "gap_below"
+
+    meta = {
+        "rerank_auto_mode": mode,
+        "rerank_auto_decision": "apply" if decision else "skip",
+        "rerank_auto_reason": reason,
+        "rerank_auto_top1": top1,
+        "rerank_auto_top2": float(top2) if top2 is not None else None,
+        "rerank_auto_gap": float(gap) if gap is not None else None,
+        "rerank_auto_gap_ratio": float(gap_ratio) if gap_ratio is not None else None,
+        "rerank_auto_min_top1_score": min_top1,
+        "rerank_auto_gap_threshold": gap_th,
+        "rerank_auto_gap_ratio_threshold": gap_ratio_th,
+    }
+    return decision, meta
+
+
 def rerank(
     question: str,
     chunks: list[dict],

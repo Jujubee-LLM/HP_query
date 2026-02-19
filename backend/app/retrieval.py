@@ -7,7 +7,7 @@ import re
 
 from .faiss_store import FaissStore
 from .llm import embed_texts
-from .rerank import rerank as rerank_chunks
+from .rerank import rerank as rerank_chunks, rerank_auto_decision
 from .planner import build_subqueries, make_plan
 from .query_expansion import expand_query
 from .settings import settings
@@ -755,6 +755,9 @@ def retrieve(question: str, top_k: int) -> tuple[list[dict], list[str], dict]:
                 return kept, [u["chunk_id"] for u in kept], meta
 
     # Rerank optimizes relevance, but can conflict with "first/earliest" intent.
+    rerank_mode = str(getattr(settings, "retrieval_rerank_mode", "always") or "always").strip().lower()
+    if rerank_mode not in ("always", "auto"):
+        rerank_mode = "always"
     rerank_enabled = bool(settings.retrieval_rerank_enabled) and not temporal_intent
     expand_enabled = bool(settings.retrieval_expand_enabled)
     plan = make_plan(question)
@@ -1097,6 +1100,13 @@ def retrieve(question: str, top_k: int) -> tuple[list[dict], list[str], dict]:
 
     rerank_status: str | None = None
     rerank_meta: dict | None = None
+    rerank_auto_meta: dict | None = None
+    if rerank_enabled and rerank_mode == "auto" and used:
+        should_rerank, rerank_auto_meta = rerank_auto_decision(used, threshold_mode=threshold_mode)
+        if not should_rerank:
+            rerank_enabled = False
+        else:
+            rerank_status = "auto_apply"
     if rerank_enabled and used:
         t = time.perf_counter()
         score_map, rerank_status, rerank_meta = rerank_chunks(
@@ -1130,6 +1140,8 @@ def retrieve(question: str, top_k: int) -> tuple[list[dict], list[str], dict]:
             meta["rerank_model"] = (settings.retrieval_rerank_model or settings.openai_chat_model)
         meta["rerank_candidates"] = int(candidate_k)
         meta["rerank_status"] = rerank_status
+    if rerank_auto_meta:
+        meta.update(rerank_auto_meta)
     if expand_enabled:
         meta["expand_enabled"] = True
         meta["expand_n"] = int(settings.retrieval_expand_n)

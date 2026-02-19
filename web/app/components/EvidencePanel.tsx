@@ -7,8 +7,12 @@ export default function EvidencePanel(props: {
   chunks: UsedChunk[];
   activeChunkId: string | null;
   onSelect: (id: string) => void;
+  showDebug?: boolean;
 }) {
   const [showDetails, setShowDetails] = useState(false);
+  const allowMeta = !!props.showDebug;
+  const metaClass = allowMeta ? "" : "meta-hidden";
+  const detailMetaClass = allowMeta && showDetails ? "" : "meta-hidden";
 
   const rows = useMemo(() => {
     // Keep backend order stable so it matches "来源#"/"[来源#]" in the answer prompt.
@@ -22,11 +26,11 @@ export default function EvidencePanel(props: {
           <div className="label">对照段落</div>
           <div className="small">可点击条目查看摘要，必要时展开细节。</div>
         </div>
-        <span className="badge">条目: {rows.length}</span>
+        <span className={`badge ${metaClass}`}>条目: {rows.length}</span>
       </div>
 
       <div style={{ marginTop: 12, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <label className="small" style={{ display: "flex", alignItems: "center", gap: 8, userSelect: "none" }}>
+        <label className={`small ${metaClass}`} style={{ display: "flex", alignItems: "center", gap: 8, userSelect: "none" }}>
           <input type="checkbox" checked={showDetails} onChange={(e) => setShowDetails(e.target.checked)} />
           显示细节
         </label>
@@ -49,24 +53,28 @@ export default function EvidencePanel(props: {
                 <span className="badge">来源{idx + 1}</span>
                 <div style={{ display: "grid", gap: 6, width: "100%" }}>
                   <div style={{ display: "flex", justifyContent: "space-between", gap: 12, alignItems: "baseline" }}>
-                    <div className="small" style={{ color: "var(--text)" }}>
+                    <div className={`small ${metaClass}`} style={{ color: "var(--text)" }}>
                       p{c.page_start}
                       {c.page_end !== c.page_start ? `–${c.page_end}` : ""}
                       {c.chapter ? ` · ${c.chapter}` : ""}
                     </div>
-                    <div className="small">
+                    <div className={`small ${metaClass}`}>
                       {c.score.toFixed(3)}
-                      {showDetails && c.rerank_score != null ? ` · rerank ${c.rerank_score.toFixed(3)}` : ""}
-                      {showDetails && c.vector_score != null ? ` · vec ${c.vector_score.toFixed(3)}` : ""}
-                      {showDetails && c.bm25_score != null ? ` · bm25 ${c.bm25_score.toFixed(3)}` : ""}
+                      {c.rerank_score != null ? (
+                        <span className={detailMetaClass}> · rerank {c.rerank_score.toFixed(3)}</span>
+                      ) : null}
+                      {c.vector_score != null ? (
+                        <span className={detailMetaClass}> · vec {c.vector_score.toFixed(3)}</span>
+                      ) : null}
+                      {c.bm25_score != null ? (
+                        <span className={detailMetaClass}> · bm25 {c.bm25_score.toFixed(3)}</span>
+                      ) : null}
                     </div>
                   </div>
                   <div style={{ color: "var(--text)", lineHeight: 1.55 }}>{c.text_snippet}</div>
-                  {showDetails ? (
-                    <div className="mono small" style={{ wordBreak: "break-all" }}>
-                      {c.chunk_id}
-                    </div>
-                  ) : null}
+                  <div className={`mono small ${detailMetaClass}`} style={{ wordBreak: "break-all" }}>
+                    {c.chunk_id}
+                  </div>
                 </div>
               </div>
             </button>

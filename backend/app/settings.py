@@ -29,7 +29,7 @@ class Settings(BaseSettings):
     auth_admin_password: str = "change_me_too"
 
     session_secret: str = "change_me_session_secret"
-    web_origin: str = "http://localhost:3000"
+    web_origin: str = "http://localhost:3001"
 
     data_pdf_path: str = "/app/data/book.pdf"
     faiss_dir: str = "/app/storage/faiss"
@@ -37,6 +37,11 @@ class Settings(BaseSettings):
     audit_log_path: str = "/app/storage/logs.jsonl"
     entity_index_path: str = "/app/storage/entity_index.json"
     aliases_path: str = "/app/storage/aliases.json"
+    rate_limit_path: str = "/app/storage/rate_limit.json"
+
+    rate_limit_enabled: bool = True
+    rate_limit_monthly_limit: int = 30
+    rate_limit_exempt_users: str = ""
 
     ingest_extractor: str = "auto"  # auto|pdfminer|pypdf
     ingest_min_nonempty_pages: int = 5
@@ -63,7 +68,8 @@ class Settings(BaseSettings):
     entity_max_postings_per_entity: int = 2000
     entity_keep_earliest_per_entity: int = 200
 
-    retrieval_top_k_default: int = 16
+    # Recall more candidates to reduce miss hits; balanced for latency.
+    retrieval_top_k_default: int = 18
     retrieval_min_keep: int = 6
     retrieval_score_delta: float = 0.20
     retrieval_gap_threshold: float = 0.18
@@ -72,19 +78,24 @@ class Settings(BaseSettings):
     retrieval_min_score: float | None = None
 
     # Hybrid retrieval (BM25 + vector). Set RETRIEVAL_HYBRID_ALPHA to enable.
-    retrieval_hybrid_alpha: float | None = 0.65  # 0..1 (vector weight), None disables hybrid
-    retrieval_hybrid_vec_k: int = 50
-    retrieval_hybrid_bm25_k: int = 50
+    retrieval_hybrid_alpha: float | None = 0.55  # 0..1 (vector weight), None disables hybrid
+    retrieval_hybrid_vec_k: int = 80
+    retrieval_hybrid_bm25_k: int = 80
     retrieval_hybrid_rrf_k0: int = 60
 
     # Optional rerank (final ranking) after recall (vector or hybrid).
     # When enabled, `used_chunks[].score` becomes the rerank score (final_score).
     retrieval_rerank_enabled: bool = True
+    retrieval_rerank_mode: str = "always"  # always|auto
     retrieval_rerank_model: str | None = None  # defaults to openai_chat_model
-    retrieval_rerank_candidates: int = 32  # how many recalled chunks to rerank
-    retrieval_rerank_max_chars: int = 800  # per-chunk text length sent to reranker
+    retrieval_rerank_candidates: int = 48  # how many recalled chunks to rerank
+    retrieval_rerank_max_chars: int = 1100  # per-chunk text length sent to reranker
     retrieval_rerank_base_url: str | None = "http://rerank:9001"
     retrieval_rerank_http_timeout_seconds: float = 60.0
+    # Auto-rerank: rerank only when recall confidence is low.
+    retrieval_rerank_auto_min_top1_score: float | None = None
+    retrieval_rerank_auto_gap_threshold: float | None = None
+    retrieval_rerank_auto_gap_ratio_threshold: float | None = None
 
     # Optional query expansion (multi-query recall). Runs before recall; merges candidates with weighted RRF.
     retrieval_expand_enabled: bool = True
@@ -112,7 +123,7 @@ class Settings(BaseSettings):
     entity_rrf_weight_entity: float = 0.8
 
     # RAG prompt shaping (latency-critical): cap how much evidence is sent to the LLM.
-    rag_max_chunks: int = 10
+    rag_max_chunks: int = 12
     rag_evidence_chunk_max_chars: int = 900
     rag_evidence_total_max_chars: int = 10000
     rag_retry_on_abstain: bool = True

@@ -29,7 +29,7 @@ docker compose run --rm --no-deps api python -m app.ingest --chunk-only
 - `storage/faiss/id_map.json`
 
 ## 访问入口
-- Web UI：`http://localhost:3000`
+- Web UI：`http://localhost:3001`
 - API：`http://localhost:8000/health`
 
 ## 评测
@@ -53,4 +53,3 @@ python scripts/eval.py --questions scripts/questions.jsonl --report_dir storage/
 账号密码在 `.env`：
 - 研究员：`AUTH_USERNAME` / `AUTH_PASSWORD`
 - 管理员：`AUTH_ADMIN_USERNAME` / `AUTH_ADMIN_PASSWORD`
-

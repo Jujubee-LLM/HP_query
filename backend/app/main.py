@@ -11,7 +11,9 @@ from fastapi.responses import StreamingResponse
 from starlette.middleware.sessions import SessionMiddleware
 
 from .audit import append_audit_log
-from .auth import require_admin, require_user
+from .auth import optional_user, require_admin, require_user
+from .rate_limit import check_and_increment
+from .quota import redeem_code
 from .rag import rag_answer, retrieve_only_answer, build_evidence_block
 from .retrieval import retrieve
 from .llm import chat_complete, chat_complete_stream
@@ -99,8 +101,18 @@ def me(user=Depends(require_user)):
     return {"ok": True, "user": user}
 
 
+@app.post("/quota/redeem")
+def quota_redeem(body: dict, request: Request, user=Depends(optional_user)):
+    code = str(body.get("code") or "")
+    anon_id = request.session.get("anon_id")
+    user_id = user.get("username") if user else ""
+    balance = redeem_code(code, user_id=user_id, anon_id=anon_id)
+    return {"ok": True, "balance": balance}
+
+
 @app.post("/query", response_model=QueryResponse)
-def query(body: QueryRequest, request: Request, user=Depends(require_user)):
+def query(body: QueryRequest, request: Request, user=Depends(optional_user)):
+    check_and_increment(request, user)
     top_k = body.top_k or settings.retrieval_top_k_default
     blocked, block_reason = should_block(body.question)
     if blocked:
@@ -189,7 +201,8 @@ def query(body: QueryRequest, request: Request, user=Depends(require_user)):
 
 
 @app.post("/query/stream")
-def query_stream(body: QueryRequest, request: Request, user=Depends(require_user)):
+def query_stream(body: QueryRequest, request: Request, user=Depends(optional_user)):
+    check_and_increment(request, user)
     top_k = body.top_k or settings.retrieval_top_k_default
     blocked, block_reason = should_block(body.question)
     question_retrieve, question_llm, qmeta = normalize_question(body.question)

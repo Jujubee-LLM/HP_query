@@ -48,7 +48,7 @@ docker compose logs -f web
 ```
 
 ### 访问地址
-- Web UI：`http://localhost:3000`
+- Web UI：`http://localhost:3001`
 - API：`http://localhost:8000`（健康检查：`/health`）
 
 ## 知识库 ingest（抽取->分块->向量化->FAISS 落盘）

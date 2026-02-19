@@ -3,7 +3,7 @@ import re
 from .llm import chat_complete
 from .planner import extract_list_criteria, is_list_intent, make_plan, needs_criteria_hint
 from .prompts import SYSTEM_PROMPT, USER_PROMPT, ABSTAIN_REWRITE_SYSTEM_PROMPT
-from .rerank import rerank as rerank_chunks
+from .rerank import rerank as rerank_chunks, rerank_auto_decision
 from .settings import settings
 
 _META_WORDS = ("参考信息", "资料", "原文", "片段", "页码", "章节", "知识库", "小说", "书中")
@@ -326,6 +326,11 @@ def _rerank_for_evidence(question: str, used_chunks: list[dict]) -> list[dict]:
         return used_chunks
     if not bool(getattr(settings, "retrieval_rerank_enabled", False)):
         return used_chunks
+    rerank_mode = str(getattr(settings, "retrieval_rerank_mode", "always") or "always").strip().lower()
+    if rerank_mode == "auto":
+        should_rerank, _meta = rerank_auto_decision(used_chunks, threshold_mode=None)
+        if not should_rerank:
+            return used_chunks
     # If retrieval already attached rerank scores, preserve its ordering and avoid double-rerank.
     if any("rerank_score" in c for c in used_chunks):
         return used_chunks
