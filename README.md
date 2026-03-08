@@ -1,5 +1,8 @@
 # 哈利波特小说 RAG（FastAPI + FAISS + Next.js）
 
+<img width="1379" height="662" alt="截屏2026-02-15 13 49 32" src="https://github.com/user-attachments/assets/35a8780d-1b11-40a9-be26-801961c2f2c3" />
+
+
 本项目仅面向《哈利波特》小说知识库的检索与问答。
 唯一知识库文件：`data/book.pdf`（哈利波特小说 PDF）。
 
